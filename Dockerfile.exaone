@@ -1,0 +1,20 @@
+FROM pytorch/pytorch:2.4.0-cuda12.4-cudnn9-devel
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PIP_NO_CACHE_DIR=1 \
+    MAX_JOBS=4 \
+    VLLM_TARGET_DEVICE=cuda
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      git cmake ninja-build build-essential ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install --upgrade pip setuptools wheel
+
+RUN pip install "git+https://github.com/nuxlear/transformers.git@add-exaone4_5"
+
+RUN pip install --no-build-isolation \
+    "git+https://github.com/lkm2835/vllm.git@add-exaone4_5"
+
+EXPOSE 8000
+ENTRYPOINT ["python3","-m","vllm.entrypoints.openai.api_server"]
